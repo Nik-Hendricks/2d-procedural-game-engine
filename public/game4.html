@@ -1,0 +1,145 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+
+        <script src="/js/Vec2d.js"></script>
+		<script src="/js/font.js"></script>
+		<script src="/js/game.js"></script>	
+    </head>
+	<canvas id="canvas">
+	</canvas>
+	<canvas id="temp-canvas">
+	</canvas>
+</html>
+<style>
+#canvas{
+	position:absolute;
+	width:100%;
+	height:100%;
+	top:0;
+	bottom:0;
+	right:0;
+	left:0;
+	background:black;
+}
+</style>
+<script>
+var NET;
+var count = 0;
+ var username, cameraView, screenLayer, mapLayer, box, player,secondsPassed, oldTimeStamp, camera, gameMapEntity, debugWindowEntity, cursor, friend, secondCamEntity, secondCam, inventoryEntity, controls, fps, secondsPassed, oldTimeStamp;
+var util = new Util();
+
+var game;
+var onlinePlayers = []
+
+
+
+
+
+class Infector{
+    constructor(x, y){
+        this.fps = 0;
+        this.resX = x;
+        this.resY = y;
+        this.game = new Game();
+
+
+        window.onload = () => {
+            this.initScene();
+        }
+
+    }
+    
+  
+
+
+
+
+    initScene(){
+        var player = new Entity2("test", {
+            position: [10, 10],
+            position_offset: [0, 0],
+            grid: new Sprite([['skeleton_down_1'],['skeleton_down_2']]),
+            actions:null,
+            speed:4,
+            tickSpeed:16,
+            animated:true,
+            animationFrames:{
+                right: new Sprite([['skeleton_right_1'],['skeleton_right_2']]),
+                left:new Sprite([['skeleton_left_1'],['skeleton_left_2']]), 
+                down:new Sprite([['skeleton_down_1'],['skeleton_down_2']]),
+                up:new Sprite([['skeleton_up_1'],['skeleton_up_2']]),   
+            }
+
+        })
+
+
+        screenLayer = new Layer(0, 0, this.resX, this.resY, this.game);
+        mapLayer = new Layer(2,2, 30,30, this.game);
+        box = new Entity(5,5, util.fill(new Grid(5, 5), 'rock'))
+                
+        //player = new Entity(5, 5, util.fill(new Grid(1,2), 'rock'))
+        controls = new PayerControls(player, (ev) => {})
+
+
+        cameraView = new Layer(5, 5, 20, 20, this.game)
+
+        mapLayer.registerEntity('background', new Entity(0, 0, util.fill(mapLayer.grid, 'grass1')))
+        mapLayer.registerEntity('box', box);
+        mapLayer.registerEntity('player', player)
+        screenLayer.registerEntity('map', mapLayer);
+        camera = new PlayerCamera(player, mapLayer, 10, 10)
+        NET = new NET_IO("http://104.236.0.12:81");
+
+        window.requestAnimationFrame(()=> {this.loop()});
+
+        
+    }
+
+    loop(){
+        var timeStamp = window.performance.now()
+		this.game.ctx.fillRect(0, 0, this.game.canvas.width, this.game.canvas.height)
+
+        cameraView.grid = camera.update();
+        // Calculate the number of seconds passed since the last frame
+        secondsPassed = (timeStamp - oldTimeStamp) / 1000;
+        oldTimeStamp = timeStamp;
+        
+        // Calculate fps
+        var fps = Math.round(1 / secondsPassed);
+
+
+        
+
+        mapLayer.update();
+        screenLayer.update();
+        //this.game.updateLayer(screenLayer)
+        window.requestAnimationFrame(() => {this.loop()});
+    }
+
+    initialPrompt(){
+        
+    }
+
+}
+
+
+
+var infector = new Infector(window.screen.width / 10, window.screen.height / 10);
+    function randRange(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+  }
+
+
+
+
+</script>
+
+<style>
+    canvas{
+        cursor: none;
+    }
+</style>
